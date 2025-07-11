@@ -1,7 +1,7 @@
 ## List of Papers I want to read and reproduce
 
 - [ ] Dataset comprehension and representation
-
+  https://github.com/bentrevett
   - https://mrinalxdev.github.io/mrinalxblogs/blogs/dsa-practical.html
   - Tensors: https://notes.101ai.net/basics/tensors
   - Data for training: https://notes.101ai.net/deep-learning/data-for-training
