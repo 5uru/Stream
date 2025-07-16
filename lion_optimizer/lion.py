@@ -1,43 +1,46 @@
-from cnn import Model
-from tinygrad import Tensor, nn
-
-
+from tinygrad import Tensor
 
 class Lion:
-    def __init__(self, params, lr=0.001, beta1=0.9, beta2=0.999, weight_decay=0.0):
-        self.params = params
+    """
+    Lion optimizer implementation
+
+    Based on the article : https://arxiv.org/abs/2302.06675
+    """
+    def __init__(self, params, lr=1e-4, betas=(0.9, 0.99), weight_decay=0.0):
+        self.params = list(params)
         self.lr = lr
-        self.beta1 = beta1
-        self.beta2 = beta2
+        self.beta1, self.beta2 = betas
         self.weight_decay = weight_decay
-        self.momentum = [Tensor.zeros_like(p) for p in self.params]
+        self.momentums = [Tensor.zeros_like(p) for p in self.params]
 
     def step(self, gradients):
-        for i, (p, g, m) in enumerate(zip(self.params, gradients, self.momentum)):
-            p *= (1 - self.lr * self.weight_decay)
+        """
+        Performs an optimization step with the Lion algorithm
+        """
+        for i, (param, grad) in enumerate(zip(self.params, gradients)):
+            if self.weight_decay != 0:
+                # Apply gradient regularization
+                grad = grad + self.weight_decay * param
 
-            direction = self.beta1 * m + (1 - self.beta1) * g
-            p -= self.lr * Tensor.sign(direction)
-            self.params[i] = p
-            self.momentum[i] = self.beta2 * m + (1 - self.beta2) * g
+            # Recovers the previous moment
+            momentum = self.momentums[i]
 
-        return self.params
+            # Calculates update (weighted combination of moment and current gradient)
+            update = self.beta1 * momentum + (1 - self.beta1) * grad
 
+            # Explicitly checks that the update is non-zero
+            update_sign = Tensor.sign(update)
 
+            # Force tensor realization before updating
+            update_sign = update_sign.realize()
 
-if __name__ == "__main__":
+            # Explicit parameter update
+            new_param = param - self.lr * update_sign
+            # Explicit parameter update
+            param.assign(new_param)
 
-    cnn = Model()
-    x = Tensor.randn(1, 1, 28, 28)
-    params = nn.state.get_parameters(cnn)
-    optimizer = Lion(params, lr=0.001)
-    Tensor.training = True  # Enable training mode
-    y = cnn(x)
-    target = Tensor([5])  # Example target class
-    loss = y.sparse_categorical_crossentropy(target)
-    gradients = loss.gradient(*params)
-    new_params = optimizer.step(gradients)
-
-
+            # Update of the moment with beta2 and force its realization
+            new_momentum = self.beta2 * momentum + (1 - self.beta2) * grad
+            self.momentums[i].assign(new_momentum.realize())
 
 
