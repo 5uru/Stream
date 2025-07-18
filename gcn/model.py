@@ -30,7 +30,12 @@ class GCNLayer:
         x = self.dense(x)
         return x.tanh()
 
+class GCN:
+    def __init__(self, in_features, out_features):
+        self.layer = GCNLayer(in_features, out_features)
 
+    def __call__(self, x, adj_matrix):
+        return self.layer(x, adj_matrix)
 
 if __name__ == "__main__":
     x = Tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
