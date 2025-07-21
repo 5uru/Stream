@@ -7,22 +7,12 @@ class GCNLayer:
     def __init__(self, in_features: int, out_features: int):
         """
         Initialize a GCN layer.
-
-        Args:
-            in_features: Number of input features
-            out_features: Number of output features
         """
         self.dense = nn.Linear(in_features, out_features)
 
     def normalize_adjacency_matrix(self, adj_matrix: Tensor) -> Tensor:
         """
         Create a normalized adjacency matrix with self-loops.
-
-        Args:
-            adj_matrix: Input adjacency matrix
-
-        Returns:
-            Normalized adjacency matrix
         """
         # Add self-loops
         identity = Tensor.eye(adj_matrix.shape[0])
@@ -45,13 +35,6 @@ class GCNLayer:
     def __call__(self, x: Tensor, adj_matrix: Tensor) -> Tensor:
         """
         Forward pass of the GCN layer.
-
-        Args:
-            x: Node feature matrix
-            adj_matrix: Adjacency matrix
-
-        Returns:
-            Updated node features
         """
         # Normalize adjacency matrix
         norm_adj = self.normalize_adjacency_matrix(adj_matrix)
@@ -85,12 +68,6 @@ class GCN:
     def __call__(self, adj_matrix: Tensor) -> Tensor:
         """
         Forward pass of the GCN model.
-
-        Args:
-            adj_matrix: Adjacency matrix
-
-        Returns:
-            Class predictions for each node
         """
         # Get initial node features from embedding
         node_features = self.features.weight
